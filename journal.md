@@ -21,7 +21,12 @@ and contours with approxPolyDP to find the screen and make game.py work of off t
 Unfortunately I was having incredible trouble getting approxPolyDP to detect the proper
 rectangle that is our screen. The solution in the end was to use the contours, to find a properly
 sized-convex hull as the contours (when we move interior/nested contours) perfectly drew the shape
-of window. This fixed it reliably.  
+of window. The process was we first gray scaled the image, then made it black-white depending on 
+whether the average rgb value is greater than a given threshold (This made the window
+clearly visible as a rectangle) and then running the contour finder on it. Once it found
+the contours we iterated over all the convex hulls these contours made it and filtered them
+to the 4-sided ones that fit our very specific demands (We assume this characteristic is
+unique to the subway surf game window), and return its information. This fixed it reliably.  
 
 I did a simple template matching for the restart function to 
 identify the play button (which only appears in the restart menu) and added a second delay as
