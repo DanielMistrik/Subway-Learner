@@ -40,4 +40,9 @@ anti-virus during download) and it works like a charm, allows me to set it in fl
 game ads. This part of the puzzle has been solved.
 
 ### Week 2-6 Oct 2023 ###
-
+Started work on the score reader. easyocr seems to be the easier 
+choice to pick however I think its installation messed with cv2.imshow
+as the function no longer works. In any case, score detection does roughly
+work but is quite noisy. The feature function will have to do some primitive 
+linear projection backed up by the data it gets from the actual reward function
+or some kind of outlier detection. Next step is player identification.

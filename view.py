@@ -6,9 +6,15 @@ import math
 import cv2
 import pyautogui
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def find_play_button(accuracy=0.6):
+    """
+    find_play_button -
+    :param accuracy:
+    :return:
+    """
     template = cv2.imread('source_pictures//play_button_reduced.png', 0)
     w, h = template.shape[::-1]
     screenshot = pyautogui.screenshot()
@@ -30,6 +36,7 @@ def detect_screen():
     whose width and height is above 100 pixels and its height is atleast 2 times the height.
     It assumes a unique window exists so it will return the first one it finds, otherwise None.
     Function only works if the background is a monotone and very light color
+    :return: x,y,w,h where (x,y) is the upper-left coordinate and w,h are width/height in pixels
     """
     screenshot = pyautogui.screenshot()
     screen_array = np.array(screenshot)
@@ -57,3 +64,21 @@ def detect_screen():
                 i = int(sorted_x[0][0] > sorted_x[1][0])
                 return sorted_x[i][0], sorted_x[i][1], width, height
     return None, None, None, None
+
+
+def detect_score(reader, x, y, w, h):
+    """
+    detect_score - Function that reads in the score of the game given the game window's dimensions and upper-left corner
+     coordinates extracted from the detect_screen function (it has to be the one above, not a guess as this function
+     works with a small highly-sensitive window). Also takes in an ocr reader of type easyocr.Reader. Is very noisy
+    :return: The parsed score as an integer, if it's unable to parse it returns -1
+    """
+    screenshot = pyautogui.screenshot(region=(x, y, w, h))
+    array_image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(array_image, cv2.COLOR_BGR2GRAY)
+    _, threshold = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
+    result = reader.readtext(threshold)
+    score = [detected_char[1] for detected_char in result]
+    raw_score = ''.join(filter(str.isdigit, score))
+    int_score = int(raw_score) if len(raw_score) > 0 else -1
+    return int_score
