@@ -85,6 +85,21 @@ def detect_score(reader, x, y, w, h):
     return int_score
 
 
+def _detect_color_median(array_image, lower_bound, upper_bound, sensitivity=50):
+    """
+    _detect_color_median - Returns the median coordinates of a particular range of colours on the array image
+    :param array_image: BGR converted cv2 standard numpy array,
+    :param lower_bound: BGR lower bound for the colour range
+    :param upper_bound: BGR upper bound for the colour range
+    :param sensitivity: (Optional). Minimum number of coloured coordinates to be considered. Increase for regularization
+    :return: Median coordinates of the pixels with a colour within the range
+    """
+    mask = cv2.inRange(array_image, lower_bound, upper_bound)
+    coordinates = np.column_stack(np.where(mask > 0))
+    median = np.median(coordinates, axis=0)[::-1]
+    return (None, None) if len(coordinates) < sensitivity else (median[0], median[1])
+
+
 def detect_player(x, y, w, h):
     """
     detect_player - Detects the subway surf character 'Jake' on the part of the
@@ -98,10 +113,63 @@ def detect_player(x, y, w, h):
     """
     screenshot = pyautogui.screenshot(region=(x, y, w, h))
     array_image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-    mask = cv2.inRange(array_image, (220, 255, 255), (245, 255, 255))
-    coordinates = np.column_stack(np.where(mask > 0))
-    median = np.median(coordinates, axis=0)[::-1]
-    return (None, None) if len(coordinates) == 0 else (median[0], median[1])
+    return _detect_color_median(array_image, (220, 255, 255), (245, 255, 255))
+
+
+def _detect_train_1(array_image):
+    """
+    Detects the center of the train with the door (it detects the door color)
+    """
+    return _detect_color_median(array_image, (90, 110, 2), (95, 113, 4))
+
+
+def _detect_train_1(array_image):
+    """
+    Detects the center of the train with the door (it detects the door color)
+    """
+    return _detect_color_median(array_image, (90, 110, 2), (95, 113, 4))
+
+
+def _detect_train_2(array_image):
+    """
+    Detects the white paint under the window
+    """
+    return _detect_color_median(array_image, (138, 138, 148), (141, 141, 154))
+
+
+def _detect_train_3(array_image):
+    """
+    Detects the under container blue shadow colour
+    """
+    return _detect_color_median(array_image, (89, 56, 15), (90, 57, 16))
+
+
+def _detect_under_obstacle(array_image):
+    """
+    Detects the red-white obstacle which you can duck under, detect the wooden stand.
+    """
+    return _detect_color_median(array_image, (80, 95, 165), (90, 105, 170), 35)
+
+
+def _detect_obstacle(array_image):
+    """
+    Detects any red-white obstacle, detects the red paint
+    """
+    return _detect_color_median(array_image, (10, 2, 216), (11, 3, 224))
+
+
+def _detect_platform(array_image):
+    """
+    Detects a platform, detects the blue striped paint on the sides
+    """
+    return _detect_color_median(array_image, (78, 60, 62), (78, 60, 63), 200)
+
+
+def _detect_wall(array_image):
+    """
+    Detects the wall/case, detects the brown rock colour
+    """
+    return _detect_color_median(array_image, (51, 59, 91), (52, 60, 92), 75)
 
 
 def detect_labeled_obstacles(x, y, w, h):
@@ -110,5 +178,32 @@ def detect_labeled_obstacles(x, y, w, h):
     :param y: The y part of the upper-left coordinate of the screen to be considered
     :param w: The width of the screen (in pixels) to be considered
     :param h: The height of the screen (in pixels) to be considered
-    :return: Returns a dictionary of labelled obstacles with a list of coordinates, width and height where they appear
+    :return: Returns a dictionary of labelled obstacles in a vector containing the median coordinates of their location
+    with the elements determining which part of the screen they were found. The structure is as follows:
+    [left third, middle third, last third, left half, right half].
     """
+    modified_y, modified_height = y+h/3, (2/3)*h
+    # Capturing different parts of the screen
+    array_whole = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x, y, w, h))), cv2.COLOR_RGB2BGR)
+    array_left = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x, modified_y, w*(3.5/9), modified_height))),
+                              cv2.COLOR_RGB2BGR)
+    array_middle = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x+w*(3.5/9), modified_y, w*(2/9), modified_height))),
+                                cv2.COLOR_RGB2BGR)
+    array_right = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x+w*(5.5/9), modified_y, w*(3.5/9), modified_height))),
+                               cv2.COLOR_RGB2BGR)
+    array_left_half = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x, modified_y, w/2, modified_height))),
+                               cv2.COLOR_RGB2BGR)
+    array_right_half = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x + w / 2, modified_y, w / 2, modified_height))),
+        cv2.COLOR_RGB2BGR)
+
+    # Collecting results for a function into a list
+    def vectorize_func(f):
+        return [f(array_left), f(array_middle), f(array_right), f(array_left_half), f(array_right_half)]
+
+    # Collect actual data for each obstacle
+    return_dict = {'train_1': vectorize_func(_detect_train_1), 'train_2': vectorize_func(_detect_train_2),
+                   'train_3': vectorize_func(_detect_train_3), 'under_obstacle': vectorize_func(_detect_under_obstacle),
+                   'obstacle': vectorize_func(_detect_obstacle), 'platform': vectorize_func(_detect_platform),
+                   'wall': vectorize_func(_detect_wall)}
+
+    return return_dict

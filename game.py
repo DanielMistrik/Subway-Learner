@@ -42,7 +42,7 @@ class Game:
         self.score_coordinates = (x + ((300 / 410) * w), y + ((50 / 765) * h))
         self.score_window_dimensions = ((100 / 410) * w, (35 / 765) * h)
         self.reader = easyocr.Reader(['en'])
-        self.upper_right_screen_coordinates = x,y
+        self.upper_right_screen_coordinates = x, y
 
     def start(self) -> None:
         pyautogui.moveTo(self.center[0], self.center[1])
@@ -95,12 +95,15 @@ class Game:
 
 if __name__ == '__main__':
     test = Game()
-    x,y = test.upper_right_screen_coordinates
+    x, y = test.upper_right_screen_coordinates
+
     while(True):
-        coords = test.get_player_location()
-        print(coords)
+        coords = view.detect_labeled_obstacles(x, y, test.pixel_width_of_game_screen, test.pixel_height_of_game_screen)
+        print(coords['wall'])
+        """
         if coords[0] is not None:
             pyautogui.moveTo(coords[0]+x, coords[1]+y)
+        """
     """
     test.start()
     test.action(Action.DOWN)
