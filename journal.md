@@ -46,3 +46,10 @@ as the function no longer works. In any case, score detection does roughly
 work but is quite noisy. The feature function will have to do some primitive 
 linear projection backed up by the data it gets from the actual reward function
 or some kind of outlier detection. Next step is player identification.
+
+For player identification, while I could do the template matching I did with the 
+play button I realized that it is too unreliable. Instead I decided to look for a 
+unique characteristic in the character, which turned out to be the colour of their 
+hoodie. I found the mean of all pixels with the coordinates and it gave me a very reliable
+prediction of where the player is. Next up is obstacle identification which I might do 
+with template matching of the colouring like with the player.

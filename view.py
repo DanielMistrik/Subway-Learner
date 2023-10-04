@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 
 def find_play_button(accuracy=0.6):
     """
-    find_play_button -
-    :param accuracy:
-    :return:
+    find_play_button - Finds the green play button on the screen
+    :param accuracy: The accuracy of the match, if you arent finding the play button
+    successfully try lowering the accuracy
+    :return: Coordinates of the center of the play button, if not found a tuple of Nones
     """
     template = cv2.imread('source_pictures//play_button_reduced.png', 0)
     w, h = template.shape[::-1]
@@ -82,3 +83,32 @@ def detect_score(reader, x, y, w, h):
     raw_score = ''.join(filter(str.isdigit, score))
     int_score = int(raw_score) if len(raw_score) > 0 else -1
     return int_score
+
+
+def detect_player(x, y, w, h):
+    """
+    detect_player - Detects the subway surf character 'Jake' on the part of the
+    screen given by x,y,w,h
+    :param x: The x part of the upper-left coordinate of the screen to be considered
+    :param y: The y part of the upper-left coordinate of the screen to be considered
+    :param w: The width of the screen (in pixels) to be considered
+    :param h: The height of the screen (in pixels) to be considered
+    :return: A coordinate corresponding to some part of the player's head, if the player
+    isn't found a tuple of Nones will be returned
+    """
+    screenshot = pyautogui.screenshot(region=(x, y, w, h))
+    array_image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+    mask = cv2.inRange(array_image, (220, 255, 255), (245, 255, 255))
+    coordinates = np.column_stack(np.where(mask > 0))
+    median = np.median(coordinates, axis=0)[::-1]
+    return (None, None) if len(coordinates) == 0 else (median[0], median[1])
+
+
+def detect_labeled_obstacles(x, y, w, h):
+    """
+    detect_labeled_obstacles - Detects obstacles and returns a labeled coordinate+width+height of them in a dictionary
+    :param y: The y part of the upper-left coordinate of the screen to be considered
+    :param w: The width of the screen (in pixels) to be considered
+    :param h: The height of the screen (in pixels) to be considered
+    :return: Returns a dictionary of labelled obstacles with a list of coordinates, width and height where they appear
+    """

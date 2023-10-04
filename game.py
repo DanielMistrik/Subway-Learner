@@ -25,7 +25,7 @@ class Action(Enum):
 
 
 class Game:
-    dimensions: (int, int)
+    upper_right_screen_coordinates: (int, int)
     center: (int, int)
     pixel_width_of_game_screen: int
     pixel_height_of_game_screen: int
@@ -42,6 +42,7 @@ class Game:
         self.score_coordinates = (x + ((300 / 410) * w), y + ((50 / 765) * h))
         self.score_window_dimensions = ((100 / 410) * w, (35 / 765) * h)
         self.reader = easyocr.Reader(['en'])
+        self.upper_right_screen_coordinates = x,y
 
     def start(self) -> None:
         pyautogui.moveTo(self.center[0], self.center[1])
@@ -78,13 +79,28 @@ class Game:
     def get_score(self) -> int:
         x, y = self.score_coordinates
         w, h = self.score_window_dimensions
+        # Probably add the noise-handler and active prediction here
         return view.detect_score(self.reader, x, y, w, h)
+
+    def get_player_location(self) -> (int, int):
+        x, y = self.upper_right_screen_coordinates
+        game_screen_third = (1/3)*self.pixel_height_of_game_screen
+        y += game_screen_third
+        x += 2
+        w = self.pixel_width_of_game_screen - 5
+        h = 2*game_screen_third
+        results = view.detect_player(x, y, w, h)
+        return (results[0]+2, results[1]+game_screen_third) if results[0] is not None else (None, None)
 
 
 if __name__ == '__main__':
     test = Game()
+    x,y = test.upper_right_screen_coordinates
     while(True):
-        print(test.get_score())
+        coords = test.get_player_location()
+        print(coords)
+        if coords[0] is not None:
+            pyautogui.moveTo(coords[0]+x, coords[1]+y)
     """
     test.start()
     test.action(Action.DOWN)
