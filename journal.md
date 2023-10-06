@@ -84,3 +84,11 @@ cost by removing the easyocr library which was expensive. Working on the feature
 The challenge was parsing the cv output from the view obstacles function
 but I got the first part of the state vector to work with a quite satisfying 
 accuracy. 
+
+Finally finished the feature function. I had to remove the wall
+states as they were too inaccurate. Otherwise, some tweaking to the 
+pixel distances worked fine. The current approach normalizes distance to
+an object from 2 (not visible) then [1,0] where 1 is the furthest visible location
+and 0 is collision with the obstacle. Now that the feature function is
+done I can move on to set-up for RL. The state function will probably
+have to poll the state function 3 times and average to remove some noise.

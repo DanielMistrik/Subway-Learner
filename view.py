@@ -123,7 +123,7 @@ def _detect_under_obstacle(array_image):
     """
     Detects the red-white obstacle which you can duck under, detect the wooden stand.
     """
-    return _detect_color_median(array_image, (80, 95, 165), (90, 105, 170), 35)
+    return _detect_color_median(array_image, (80, 95, 165), (90, 105, 170), 25)
 
 
 def _detect_obstacle(array_image):
@@ -139,12 +139,12 @@ def _detect_platform(array_image):
     """
     return _detect_color_median(array_image, (78, 60, 62), (78, 60, 63), 200)
 
-
+# Doesn't work at all, ignoring it for now <- Fix if needed
 def _detect_wall(array_image):
     """
     Detects the wall/case, detects the brown rock colour
     """
-    return _detect_color_median(array_image, (51, 59, 91), (52, 60, 92), 75)
+    return _detect_color_median(array_image, (49, 57, 84), (57, 60, 90), 350)
 
 
 def is_alive(x, y, w, h):
