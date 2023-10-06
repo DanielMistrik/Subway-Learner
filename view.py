@@ -67,24 +67,6 @@ def detect_screen():
     return None, None, None, None
 
 
-def detect_score(reader, x, y, w, h):
-    """
-    detect_score - Function that reads in the score of the game given the game window's dimensions and upper-left corner
-     coordinates extracted from the detect_screen function (it has to be the one above, not a guess as this function
-     works with a small highly-sensitive window). Also takes in an ocr reader of type easyocr.Reader. Is very noisy
-    :return: The parsed score as an integer, if it's unable to parse it returns -1
-    """
-    screenshot = pyautogui.screenshot(region=(x, y, w, h))
-    array_image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-    gray = cv2.cvtColor(array_image, cv2.COLOR_BGR2GRAY)
-    _, threshold = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
-    result = reader.readtext(threshold)
-    score = [detected_char[1] for detected_char in result]
-    raw_score = ''.join(filter(str.isdigit, score))
-    int_score = int(raw_score) if len(raw_score) > 0 else -1
-    return int_score
-
-
 def _detect_color_median(array_image, lower_bound, upper_bound, sensitivity=50):
     """
     _detect_color_median - Returns the median coordinates of a particular range of colours on the array image
@@ -123,18 +105,11 @@ def _detect_train_1(array_image):
     return _detect_color_median(array_image, (90, 110, 2), (95, 113, 4))
 
 
-def _detect_train_1(array_image):
-    """
-    Detects the center of the train with the door (it detects the door color)
-    """
-    return _detect_color_median(array_image, (90, 110, 2), (95, 113, 4))
-
-
 def _detect_train_2(array_image):
     """
     Detects the white paint under the window
     """
-    return _detect_color_median(array_image, (138, 138, 148), (141, 141, 154))
+    return _detect_color_median(array_image, (138, 138, 148), (141, 141, 154), 30)
 
 
 def _detect_train_3(array_image):
@@ -170,6 +145,18 @@ def _detect_wall(array_image):
     Detects the wall/case, detects the brown rock colour
     """
     return _detect_color_median(array_image, (51, 59, 91), (52, 60, 92), 75)
+
+
+def is_alive(x, y, w, h):
+    """
+    is_alive - Returns a boolean on whether the player is still in the game. Detects
+    by colour matching to the golden star next to the score function. Assumes the coordinates
+    and width/height point to this region.
+    :return: True if player is alive, False otherwise
+    """
+    screenshot = pyautogui.screenshot(region=(x, y, w, h))
+    array_image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+    return _detect_color_median(array_image, (24, 116, 229), (38, 143, 251), 10)[0] is not None
 
 
 def detect_labeled_obstacles(x, y, w, h):

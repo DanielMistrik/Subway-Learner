@@ -75,3 +75,12 @@ but hopefully not terrible. The feature function is going to have to do alot of 
 For the obstacles, the wood colour is very noisy so those will only be classified as obstacles if 
 the median for the red paint of obstacle is also sort of near. Next up is to produce the actual
 feature function.
+
+Added a is_alive tracker and the score function was way too noisy
+and (computationally-cheap) smoothing was not working well either and 
+as the score is roughly a monotonically increasing linear function I 
+reimplemented such a thing for the score function, this reduces computational
+cost by removing the easyocr library which was expensive. Working on the feature function.
+The challenge was parsing the cv output from the view obstacles function
+but I got the first part of the state vector to work with a quite satisfying 
+accuracy. 
