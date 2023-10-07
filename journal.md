@@ -92,3 +92,14 @@ an object from 2 (not visible) then [1,0] where 1 is the furthest visible locati
 and 0 is collision with the obstacle. Now that the feature function is
 done I can move on to set-up for RL. The state function will probably
 have to poll the state function 3 times and average to remove some noise.
+
+Started work on the set-up for RL. Best approach is to use the openAI gym API and for this I have
+to implement a relatively simple environment class. Working on the feature vector function which
+will poll the game state 3 times and normalize to remove noise. Will then test the class out to see 
+if it is working as intended. Then it will be time to run some RL algos (finally!).
+
+
+### Weekend 7-8 Oct 2023 ###
+Finished the normalizing feature vectors. Intentionally ignored cases with a None player location and 
+minimized the platform elements because of how sensitive it is. Now we proceed to test it and then 
+apply the first RL algos.

@@ -126,7 +126,7 @@ class Game:
         self.score_coordinates = (x + ((300 / 410) * w), y + ((50 / 765) * h))
         self.score_window_dimensions = ((100 / 410) * w, (35 / 765) * h)
         self.upper_right_screen_coordinates = x, y
-        self.score = 0
+        self.score = 1
         self.additive_threshold = 0
 
     def start(self) -> None:
@@ -156,9 +156,9 @@ class Game:
                 pyautogui.press('down')
             case Action.NOOP:
                 pass
-        pyautogui.sleep(0.4)
+        pyautogui.sleep(ACTION_DURATION)
 
-    def _get_score(self, threshold: int = 500) -> int:
+    def _get_score(self, threshold: int = 100) -> int:
         self.additive_threshold += 1
         if self.additive_threshold >= threshold:
             self.score += 1
@@ -204,7 +204,7 @@ class Game:
         train lane 1, train lane 2, train lane 3,
         under_obstacle lane 1, under_obstacle lane 2, under_obstacle lane 3,
         over_obstacle lane 1, over_obstacle lane 2, over_obstacle lane 3,
-        platform lane 1, platform lane 3, is_alive
+        platform lane 1, platform lane 2, platform lane 3, is_alive
         }
         """
         feature_vec = []
