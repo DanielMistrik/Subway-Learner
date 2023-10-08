@@ -6,6 +6,8 @@ from abc import ABC
 
 import gym, game, numpy as np
 from gym import spaces
+from gym.envs.registration import register
+
 
 
 def reward_function(feature_vector):
@@ -25,7 +27,7 @@ def get_average_of_index(array, index, threshold=None):
         return np.average(np.array([arr[index] for arr in array]))
     else:
         thresholded_result = [arr[index] for arr in array if arr[index] < threshold]
-        return np.average(np.array(thresholded_result)) if len(thresholded_result) == 0 else threshold
+        return np.average(np.array(thresholded_result)) if len(thresholded_result) != 0 else threshold
 
 
 class SubwaySurferEnv(gym.Env, ABC):
@@ -34,7 +36,7 @@ class SubwaySurferEnv(gym.Env, ABC):
     game_new: bool
 
     def __init__(self):
-        self.action_space = spaces.Discrete(game.Action)
+        self.action_space = spaces.Discrete(len(game.Action))
         self.observation_space = spaces.Box(low=-1, high=2, shape=(15,), dtype=np.float32)
         self.game_live = False
         self.game_new = True
@@ -58,10 +60,9 @@ class SubwaySurferEnv(gym.Env, ABC):
             for i in range(2, 11):
                 feature_vector[i] = get_average_of_index(cleaned_combined_states, i, 2)
             for i in range(11, 14):
-                feature_vector[i] = min([cleaned_combined_states[0][i], cleaned_combined_states[1][i],
-                                         cleaned_combined_states[2][i]])
+                feature_vector[i] = min([cleaned_combined_states[j][i] for j in range(len(cleaned_combined_states))])
         feature_vector[-1] = get_median_of_index(combined_states, -1)
-        return feature_vector
+        return feature_vector.astype('float32')
 
     def step(self, action):
         # Execute one time step within the environment
@@ -76,11 +77,18 @@ class SubwaySurferEnv(gym.Env, ABC):
         next_raw_state = self._get_feature_vector()
         reward, done = reward_function(next_raw_state), is_done(next_raw_state)
         next_state = next_raw_state[:-1]
-        return next_state, reward, done, {}
+        return next_state, reward, done, False, {}
 
     def reset(self):
         # Reset the state of the environment to an initial state
         # Logic is that even if the game is running, in 4 seconds the player will hit an object, ending the game
         time.sleep(4)
         self.game_live = False
-        return np.zeros((15,))
+        return np.zeros((15,), dtype=np.float32), {}
+
+
+register(
+    id='SubwaySurferEnv-v0',
+    entry_point='env:SubwaySurferEnv',
+)
+

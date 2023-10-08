@@ -103,3 +103,6 @@ if it is working as intended. Then it will be time to run some RL algos (finally
 Finished the normalizing feature vectors. Intentionally ignored cases with a None player location and 
 minimized the platform elements because of how sensitive it is. Now we proceed to test it and then 
 apply the first RL algos.
+
+Worked on fixing the errors with the env implementation. Main ones were casting
+and the get_feature_vector() function which still throw some warnings I am going over.

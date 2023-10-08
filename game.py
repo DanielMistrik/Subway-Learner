@@ -145,6 +145,7 @@ class Game:
         pyautogui.click(x=self.center[0], y=self.center[1] - (330 / 765) * self.pixel_height_of_game_screen)
 
     def action(self, action: Action) -> None:
+        action = Action(action)
         match action:
             case Action.LEFT:
                 pyautogui.press('left')
@@ -156,7 +157,8 @@ class Game:
                 pyautogui.press('down')
             case Action.NOOP:
                 pass
-        pyautogui.sleep(ACTION_DURATION)
+            case _:
+                print('not matched')
 
     def _get_score(self, threshold: int = 100) -> int:
         self.additive_threshold += 1
