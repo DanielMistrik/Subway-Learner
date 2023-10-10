@@ -135,10 +135,12 @@ class Game:
         time.sleep(2)
 
     def restart(self) -> None:
-        # locateOnScreen function, use it
-        play_button_center = view.find_play_button()
-        while play_button_center[0] is None:
-            play_button_center = view.find_play_button()
+        play_button_center, detected_cross = view.find_play_button(), view.detect_cross()
+        while detected_cross[0] is not None or play_button_center[0] is None:
+            if detected_cross[0] is not None:
+                pyautogui.click(x=detected_cross[0], y=detected_cross[1])
+                time.sleep(1)
+            play_button_center, detected_cross = view.find_play_button(), view.detect_cross()
         time.sleep(1)
         pyautogui.click(x=play_button_center[0], y=play_button_center[1])
         time.sleep(2)
@@ -238,11 +240,12 @@ if __name__ == '__main__':
             pyautogui.moveTo(coords[0]+x, coords[1]+y) 
         
 
-    """
+    
     test.start()
     test.action(Action.DOWN)
     test.action(Action.UP)
     test.action(Action.LEFT)
     test.action(Action.RIGHT)
     test.restart()
+    """
 

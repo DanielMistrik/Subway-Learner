@@ -106,3 +106,14 @@ apply the first RL algos.
 
 Worked on fixing the errors with the env implementation. Main ones were casting
 and the get_feature_vector() function which still throw some warnings I am going over.
+
+### Week 9-13 Oct 2023 ###
+Finished the bugs that were preventing smooth runs on the random learner. I will now try some
+stable-baseline 3 algos to see how well they learn (starting with the very
+general DQN). After letting the random algo run a couple of times the median 
+score hovers around 8-10 while the best was 39. I will consider anything above 50 a significant first
+step. Moved the entire thing to gymnasium and did some feature vector cleaning
+so the baseline RF algos would run. About to run the first solid DQN on 100 timesteps, a big day.
+100 timesteps successfully trained although the resulting learner was really poor with an 
+average score of 2.8-3. I will train overnight with 10,000 timesteps.
+

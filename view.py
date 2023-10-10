@@ -31,6 +31,16 @@ def find_play_button(accuracy=0.6):
         return None, None
 
 
+def detect_cross():
+    """
+    Detects whether a cross appears on the screen. Is meant to remove any pop-ups on restart
+    :return: Coordinates of cross if found, otherwise none
+    """
+    screenshot = pyautogui.screenshot()
+    screen_array = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+    return _detect_color_median(screen_array, (60, 60, 182), (60, 60, 183), 20)
+
+
 def detect_screen():
     """
     detect_screen - Will detect the subway surfer screen, its heuristics are any window
@@ -171,7 +181,6 @@ def detect_labeled_obstacles(x, y, w, h):
     """
     modified_y, modified_height = y+h/3, (2/3)*h
     # Capturing different parts of the screen
-    array_whole = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x, y, w, h))), cv2.COLOR_RGB2BGR)
     array_left = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x, modified_y, w*(3.5/9), modified_height))),
                               cv2.COLOR_RGB2BGR)
     array_middle = cv2.cvtColor(np.array(pyautogui.screenshot(region=(x+w*(3.5/9), modified_y, w*(2/9), modified_height))),

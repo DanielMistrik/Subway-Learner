@@ -4,14 +4,13 @@ env.py - The openGym API class for subway surfer
 import time
 from abc import ABC
 
-import gym, game, numpy as np
-from gym import spaces
-from gym.envs.registration import register
-
+import gymnasium as gym, game, numpy as np
+from gymnasium import spaces
+from gymnasium.envs.registration import register
 
 
 def reward_function(feature_vector):
-    return feature_vector[2]
+    return feature_vector[2].astype(float)
 
 
 def is_done(state):
@@ -72,17 +71,18 @@ class SubwaySurferEnv(gym.Env, ABC):
             self.subway_game.start()
         elif not self.game_live:
             self.subway_game.restart()
+            self.game_live = True
         else:
             self.subway_game.action(action)
         next_raw_state = self._get_feature_vector()
-        reward, done = reward_function(next_raw_state), is_done(next_raw_state)
+        reward, done = reward_function(next_raw_state), bool(is_done(next_raw_state))
         next_state = next_raw_state[:-1]
         return next_state, reward, done, False, {}
 
-    def reset(self):
+    def reset(self, seed=None):
         # Reset the state of the environment to an initial state
-        # Logic is that even if the game is running, in 4 seconds the player will hit an object, ending the game
-        time.sleep(4)
+        # Logic is that even if the game is running, in 3 seconds the player will hit an object, ending the game
+        time.sleep(3)
         self.game_live = False
         return np.zeros((15,), dtype=np.float32), {}
 
