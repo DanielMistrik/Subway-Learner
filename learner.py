@@ -50,7 +50,7 @@ def test_dqn_learner(learner: DQN, n=5):
 
 
 if __name__ == '__main__':
-    model = train_dqn_learner(10000)
+    # model = train_dqn_learner(10000)
     model = DQN.load("dqn_subway")
     test_dqn_learner(model)
     #try_random_learner()
