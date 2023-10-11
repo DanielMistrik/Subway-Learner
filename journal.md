@@ -119,4 +119,8 @@ average score of 2.8-3. I will train overnight with 10,000 timesteps.
 
 Trained overnight on 10,000 timesteps and no difference. The learner still
 always reverts to going left all the time and losing almost immediately. The number of timesteps 
-had no impact on performance, it seems the choice of algorithm was wrong.
+had no impact on performance, it seems the choice of algorithm was wrong. Before switching algorithms
+I will make the reward function more intelligent and through it push some basic rules of the game
+(i.e. don't turn right on the right lane, dont duck for a train). This reward set-up seems to have some
+initial positive feedback with the learner moving out of the train's direction and not
+just running left.

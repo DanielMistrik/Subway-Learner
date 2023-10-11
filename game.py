@@ -162,13 +162,6 @@ class Game:
             case _:
                 print('not matched')
 
-    def _get_score(self, threshold: int = 100) -> int:
-        self.additive_threshold += 1
-        if self.additive_threshold >= threshold:
-            self.score += 1
-            self.additive_threshold = 0
-        return self.score
-
     def _is_player_alive(self) -> bool:
         x, y = self.score_coordinates
         w, h = self.score_window_dimensions
@@ -204,7 +197,7 @@ class Game:
         """
         feature_vec =
         {
-        player lane, player_jump, score,
+        player lane, player_jump,
         train lane 1, train lane 2, train lane 3,
         under_obstacle lane 1, under_obstacle lane 2, under_obstacle lane 3,
         over_obstacle lane 1, over_obstacle lane 2, over_obstacle lane 3,
@@ -212,10 +205,9 @@ class Game:
         }
         """
         feature_vec = []
-        player_loc, score = self._get_discrete_player_location(), self._get_score()
+        player_loc = self._get_discrete_player_location()
         obstacle_dict, is_alive = self._get_obstacles(), self._is_player_alive()
         feature_vec += player_loc
-        feature_vec.append(self._get_score())
         feature_vec += _get_train_locations(obstacle_dict, player_loc[0])
         feature_vec += _get_under_obstacle_locations(obstacle_dict, player_loc[0])
         feature_vec += _get_over_obstacle_locations(obstacle_dict, player_loc[0])

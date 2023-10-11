@@ -1,8 +1,6 @@
 import gymnasium as gym
 import env
 from stable_baselines3 import DQN
-from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.env_checker import check_env
 
 
 def try_random_learner():
@@ -34,25 +32,28 @@ def train_dqn_learner(steps=100) -> DQN:
     return model
 
 
-def test_dqn_learner(learner: DQN, n=5):
-    env = gym.make('SubwaySurferEnv-v0')
+def test_dqn_learner(learner, n=5):
+    subway_surf_env = gym.make('SubwaySurferEnv-v0')
     total_reward = 0
     for episode in range(n):
-        obs, done = env.reset(), False
+        obs, done = subway_surf_env.reset(), False
         while not done:
             if isinstance(obs, tuple):
                 obs = obs[0]
-            action, _states = learner.predict(obs)
-            obs, reward, done, _,  info = env.step(action)
+            action, _ = learner(obs)
+            obs, reward, done, _,  info = subway_surf_env.step(action)
             total_reward += reward
     print(str(total_reward/n))
-    env.close()
+    subway_surf_env.close()
 
 
 if __name__ == '__main__':
-    # model = train_dqn_learner(10000)
+    #subway_surfer_env = gym.make('SubwaySurferEnv-v0')
+    #train_dqn_learner(1000)
     model = DQN.load("dqn_subway")
-    test_dqn_learner(model)
+    dq_learner = lambda obs: model.predict(obs)
+    # rand_learner = lambda obs: (subway_surfer_env.action_space.sample(), None)
+    test_dqn_learner(dq_learner)
     #try_random_learner()
     # ss_env = env.SubwaySurferEnv()
     # check_env(ss_env)
