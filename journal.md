@@ -124,3 +124,11 @@ I will make the reward function more intelligent and through it push some basic 
 (i.e. don't turn right on the right lane, dont duck for a train). This reward set-up seems to have some
 initial positive feedback with the learner moving out of the train's direction and not
 just running left.
+
+### Week Oct 22-29 2023 ###
+Looking over the DQN code one of the reasons for the extremely poor performance was the 
+learning_starts parameter was set at 50,000 steps which we never reached, this was dramatically reduced
+with the learning_rate and batch_sized increased for more exploration and stability. Attempts weren't
+very successful. I need to greatly modify the reward function so its simpler and more clear about
+what we want and also convert to Deep Q-Learning with the entire screen as input and a CNN as the
+agent as the current approach isn't working well.

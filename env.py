@@ -8,24 +8,14 @@ import gymnasium as gym, game, numpy as np
 from gymnasium import spaces
 from gymnasium.envs.registration import register
 
+NORMALIZING_CONSTANT = 1000000
 
-def reward_function(feature_vector, action):
-    # Apply basic rules (if violated a negative reward is given)
-    game_action = game.Action(action)
-    # If the player is on a corner-lane they cannot try to leave the game
-    if feature_vector[0] == -1 and game_action == game.Action.LEFT or \
-            feature_vector[0] == 1 and game_action == game.Action.RIGHT:
-        return -1000
-    # If the player is in front of a train, they cannot duck or jumo
-    if 0 < feature_vector[int(3 + feature_vector[0])] < 0.7 and game_action in \
-            [game.Action.DOWN, game.Action.NOOP]:
-        return -5
-    # Do not run into a train by changing lane
-    direction = 1 if game_action == game.Action.RIGHT else (-1 if game_action == game.Action.LEFT else 0)
-    if feature_vector[3 + direction] < 1:
-        return -2
 
-    return 1
+def reward_function(is_end, count):
+    # Return 0 until end when you return 1
+    if is_end:
+        return count/NORMALIZING_CONSTANT
+    return 0
 
 
 def is_done(state):
@@ -57,6 +47,7 @@ class SubwaySurferEnv(gym.Env, ABC):
         self.game_new = True
         self.subway_game = game.Game()
         self.last_state = np.zeros((15, ))
+        self.count = 0
 
     def _get_feature_vector(self):
         state_1 = self.subway_game.get_state()
@@ -82,8 +73,6 @@ class SubwaySurferEnv(gym.Env, ABC):
 
     def step(self, action):
         # Execute one time step within the environment
-        # Get the reward on the current state given the action
-        reward = reward_function(self.last_state, action)
         if self.game_new:
             self.game_live = True
             self.game_new = False
@@ -95,6 +84,8 @@ class SubwaySurferEnv(gym.Env, ABC):
             self.subway_game.action(action)
         self.last_state = self._get_feature_vector()
         done = bool(is_done(self.last_state))
+        reward = reward_function(done, self.count)
+        self.count += 0.001
         next_state = self.last_state[:-1]
         return next_state, reward, done, False, {}
 
