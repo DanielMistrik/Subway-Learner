@@ -132,3 +132,8 @@ with the learning_rate and batch_sized increased for more exploration and stabil
 very successful. I need to greatly modify the reward function so its simpler and more clear about
 what we want and also convert to Deep Q-Learning with the entire screen as input and a CNN as the
 agent as the current approach isn't working well.
+
+### Weekend Oct 28-29 2023 ###
+Unfortunately the CNN DQN performed equally poorly with more than 
+30,000 timesteps of learning. Clearly the search space is too big so we will need
+to do some pre-training with behavioral cloning.

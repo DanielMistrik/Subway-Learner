@@ -2,3 +2,4 @@
 __pycache__/
 dqn_subway*
 *.log
+new_dqn_*

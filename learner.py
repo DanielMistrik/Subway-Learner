@@ -2,6 +2,8 @@ import time
 import gymnasium as gym
 import env
 from stable_baselines3 import DQN
+from stable_baselines3.common.env_checker import check_env
+import tensorflow as tf
 import os
 
 
@@ -23,6 +25,15 @@ def try_random_learner():
     env.close()
 
 
+def train_new_DQN_learner() -> DQN:
+    ss_env = env.ImageSubwaySurferEnv()
+    model = DQN('CnnPolicy', ss_env, verbose=1, buffer_size=25000, learning_starts=25000, exploration_fraction=0.3,
+                exploration_final_eps=0.1, learning_rate=5e-4)
+    model.learn(total_timesteps=30000, log_interval=4)
+    model.save('new_dqn_subway_learner')
+    return model
+
+
 def train_dqn_learner(learning_rate=1e-4, batch_size=128, gamma=0.99, steps=500) -> DQN:
     """
     Trains a DQN learner and saves it to dqn_subway
@@ -37,7 +48,7 @@ def train_dqn_learner(learning_rate=1e-4, batch_size=128, gamma=0.99, steps=500)
 
 
 def test_dqn_learner(learner, n=5):
-    subway_surf_env = gym.make('SubwaySurferEnv-v0')
+    subway_surf_env = gym.make('SubwaySurferEnv-v1')
     total_time_lasted = 0
     for episode in range(n):
         obs, done = subway_surf_env.reset(), False
@@ -65,7 +76,13 @@ def grid_search(subway_surfer_env):
                 dq_learner = lambda obs: model.predict(obs)
                 test_dqn_learner(dq_learner)
 
+
 if __name__ == '__main__':
+    # model = train_new_DQN_learner()
+    model = DQN.load('new_dqn_subway_learner.zip')
+    dq_learner = lambda obs: model.predict(obs)
+    test_dqn_learner(dq_learner, 20)
+    """
     subway_surfer_env = gym.make('SubwaySurferEnv-v0')
     files = [f for f in os.listdir('.') if os.path.isfile(f) and f.startswith('dqn_subway-learning_rate')]
     for file in files:
@@ -77,3 +94,4 @@ if __name__ == '__main__':
     #try_random_learner()
     # ss_env = env.SubwaySurferEnv()
     # check_env(ss_env)
+    """

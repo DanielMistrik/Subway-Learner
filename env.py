@@ -4,17 +4,21 @@ env.py - The openGym API class for subway surfer
 import time
 from abc import ABC
 
+import cv2
 import gymnasium as gym, game, numpy as np
+import pyautogui
 from gymnasium import spaces
 from gymnasium.envs.registration import register
 
-NORMALIZING_CONSTANT = 1000000
+import view
+
+NORMALIZING_CONSTANT = 1000
 
 
 def reward_function(is_end, count):
     # Return 0 until end when you return 1
     if is_end:
-        return count/NORMALIZING_CONSTANT
+        return count / NORMALIZING_CONSTANT
     return 0
 
 
@@ -46,7 +50,7 @@ class SubwaySurferEnv(gym.Env, ABC):
         self.game_live = False
         self.game_new = True
         self.subway_game = game.Game()
-        self.last_state = np.zeros((15, ))
+        self.last_state = np.zeros((15,))
         self.count = 0
 
     def _get_feature_vector(self):
@@ -100,4 +104,67 @@ class SubwaySurferEnv(gym.Env, ABC):
 register(
     id='SubwaySurferEnv-v0',
     entry_point='env:SubwaySurferEnv',
+)
+
+
+class ImageSubwaySurferEnv(gym.Env, ABC):
+    subway_game: game.Game
+    game_live: bool
+    game_new: bool
+    last_state: np.ndarray
+
+    def __init__(self):
+        self.action_space = spaces.Discrete(len(game.Action))
+        self.observation_space = spaces.Box(low=0, high=255, shape=(85, 85, 1), dtype=np.uint8)
+        self.game_live = False
+        self.game_new = True
+        self.subway_game = game.Game()
+        self.last_state = np.zeros((85, 85, 1))
+        self.count = 0
+
+    def _get_feature_vector(self):
+        x, y = self.subway_game.upper_right_screen_coordinates
+        screen_array = pyautogui.screenshot(region=(x, y, self.subway_game.pixel_width_of_game_screen,
+                                                    self.subway_game.pixel_height_of_game_screen))
+        screenshot_array = np.array(screen_array)
+        array_image = cv2.cvtColor(screenshot_array, cv2.COLOR_RGB2GRAY)
+        array_image = array_image[265:-114, 2:-2]
+        new_height = array_image.shape[0] // 5
+        new_width = array_image.shape[1] // 5
+        image_blocks = array_image[:new_height * 5, :new_width * 5].reshape(new_height, 5, new_width, 5)
+        array_image = np.mean(image_blocks, axis=(1, 3)).reshape(new_height, new_width, 1)
+        is_alive = \
+            view._detect_color_median(screenshot_array[:200, 200:], (229, 116, 24), (251, 143, 38), 10)[0] is not None
+        return array_image, is_alive
+
+    def step(self, action):
+        # Execute one time step within the environment
+        if self.game_new:
+            self.game_live = True
+            self.game_new = False
+            self.subway_game.start()
+        elif not self.game_live:
+            self.subway_game.restart()
+            self.game_live = True
+        else:
+            self.subway_game.action(action)
+        self.last_state = self._get_feature_vector()
+        done = not self.last_state[1]
+        reward = reward_function(done, self.count)
+        self.count += 1
+        next_state = self.last_state[0]
+        return next_state, reward, done, False, {}
+
+    def reset(self, seed=None):
+        # Reset the state of the environment to an initial state
+        # Logic is that even if the game is running, in 3 seconds the player will hit an object, ending the game
+        time.sleep(2)
+        self.game_live = False
+        self.count = 0
+        return np.zeros((85, 85, 1), dtype=np.uint8), {}
+
+
+register(
+    id='SubwaySurferEnv-v1',
+    entry_point='env:ImageSubwaySurferEnv',
 )

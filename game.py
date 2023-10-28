@@ -80,8 +80,8 @@ def _get_under_obstacle_locations(obstacle_dict: dict, lane: int) -> [float, flo
         [_normalize_train_distance(coord, 5, 85) for coord in obstacle_dict['obstacle']], lane)
 
     def verify_obstacle(coords: (int, int)) -> int:
-        if coords[0] is not None and coords[1] is not None and coords[0] <= 2*coords[1]:
-            return (coords[0]+coords[1])/2
+        if coords[0] is not None and coords[1] is not None and coords[0] <= 2 * coords[1]:
+            return (coords[0] + coords[1]) / 2
         return 2
 
     return [verify_obstacle(coord_tuple) for coord_tuple in zip(wood_barrier_y_dists, red_barrier_y_dists)]
@@ -131,7 +131,7 @@ class Game:
 
     def start(self) -> None:
         pyautogui.click(x=self.center[0], y=self.center[1])
-        pyautogui.moveTo(x=self.center[0], y=self.center[1]-(330/765)*self.pixel_height_of_game_screen)
+        pyautogui.moveTo(x=self.center[0], y=self.center[1] - (330 / 765) * self.pixel_height_of_game_screen)
         time.sleep(2)
 
     def restart(self) -> None:
@@ -219,25 +219,16 @@ class Game:
 if __name__ == '__main__':
     test = Game()
     x, y = test.upper_right_screen_coordinates
-    """
-    while (True):
-
-        state = test.get_state()
-        print(state[9:12])
-        
-        coords = view.detect_labeled_obstacles(x, y, test.pixel_width_of_game_screen, test.pixel_height_of_game_screen)
-        print(coords['wall'])
-        
-        if coords[0] is not None:
-            pyautogui.moveTo(coords[0]+x, coords[1]+y) 
-        
-
-    
-    test.start()
-    test.action(Action.DOWN)
-    test.action(Action.UP)
-    test.action(Action.LEFT)
-    test.action(Action.RIGHT)
-    test.restart()
-    """
-
+    screen_array = pyautogui.screenshot(region=(x, y, test.pixel_width_of_game_screen,
+                                                test.pixel_height_of_game_screen))
+    screenshot_array = np.array(screen_array)
+    array_image = cv2.cvtColor(screenshot_array, cv2.COLOR_RGB2GRAY)
+    array_image = array_image[265:-114, 2:-2]
+    new_height = array_image.shape[0] // 5
+    new_width = array_image.shape[1] // 5
+    image_blocks = array_image[:new_height * 5, :new_width * 5].reshape(new_height, 5, new_width, 5)
+    array_image = np.mean(image_blocks, axis=(1, 3))
+    plt.imshow(array_image)
+    plt.axis('off')
+    plt.show()
+    print(view._detect_color_median(screenshot_array[:200, 200:], (229, 116, 24), (251, 143, 38), 10)[0] is not None)
