@@ -2,6 +2,7 @@
 view.py - Python script responsible for all CV
 """
 import math
+import time
 
 import cv2
 import pyautogui
@@ -39,6 +40,26 @@ def detect_cross():
     screenshot = pyautogui.screenshot()
     screen_array = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
     return _detect_color_median(screen_array, (60, 60, 182), (60, 60, 183), 20)
+
+
+def click_pause():
+    """
+    Finds the pause button and clicks it
+    """
+    screenshot = pyautogui.screenshot()
+    screen_array = np.array(screenshot)
+    coords = _detect_color_median(screen_array, (89, 171, 211), (90, 172, 212), 10)
+    if coords[0] is not None:
+        pyautogui.click(x=coords[0], y=coords[1])
+        time.sleep(1)
+
+
+def click_delayed_start():
+    screen_array = np.array(pyautogui.screenshot())
+    coords = _detect_color_median(screen_array, (69, 157, 44), (70, 158, 45), 10)
+    if coords[0] is not None:
+        pyautogui.click(x=coords[0], y=coords[1])
+        time.sleep(2)
 
 
 def detect_screen():

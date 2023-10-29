@@ -228,7 +228,7 @@ if __name__ == '__main__':
     new_width = array_image.shape[1] // 5
     image_blocks = array_image[:new_height * 5, :new_width * 5].reshape(new_height, 5, new_width, 5)
     array_image = np.mean(image_blocks, axis=(1, 3))
-    plt.imshow(array_image)
+    plt.imshow(screenshot_array[50:90, 280:320])
     plt.axis('off')
     plt.show()
     print(view._detect_color_median(screenshot_array[:200, 200:], (229, 116, 24), (251, 143, 38), 10)[0] is not None)

@@ -137,3 +137,8 @@ agent as the current approach isn't working well.
 Unfortunately the CNN DQN performed equally poorly with more than 
 30,000 timesteps of learning. Clearly the search space is too big so we will need
 to do some pre-training with behavioral cloning.
+
+Really good progress on the DAgger/Behvaioral Cloning Front. I got an 
+initial version up and running and it seems to be faring quite well. There are some weird
+bugs arising from step_wait() which I need to debug, it could be a me issue but the bug is very
+weird so might be something on their side. In any case Ill solve that tomorrow.

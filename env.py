@@ -7,7 +7,7 @@ from abc import ABC
 import cv2
 import gymnasium as gym, game, numpy as np
 import pyautogui
-from gymnasium import spaces
+from gym import spaces
 from gymnasium.envs.registration import register
 
 import view
@@ -19,7 +19,7 @@ def reward_function(is_end, count):
     # Return 0 until end when you return 1
     if is_end:
         return count / NORMALIZING_CONSTANT
-    return 0
+    return 0.0
 
 
 def is_done(state):
@@ -116,11 +116,13 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
     def __init__(self):
         self.action_space = spaces.Discrete(len(game.Action))
         self.observation_space = spaces.Box(low=0, high=255, shape=(85, 85, 1), dtype=np.uint8)
+        self.num_envs = 1
         self.game_live = False
         self.game_new = True
         self.subway_game = game.Game()
         self.last_state = np.zeros((85, 85, 1))
         self.count = 0
+        self.step_results = None
 
     def _get_feature_vector(self):
         x, y = self.subway_game.upper_right_screen_coordinates
@@ -134,7 +136,7 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
         image_blocks = array_image[:new_height * 5, :new_width * 5].reshape(new_height, 5, new_width, 5)
         array_image = np.mean(image_blocks, axis=(1, 3)).reshape(new_height, new_width, 1)
         is_alive = \
-            view._detect_color_median(screenshot_array[:200, 200:], (229, 116, 24), (251, 143, 38), 10)[0] is not None
+            view._detect_color_median(screenshot_array[50:90, 280:320], (229, 116, 24), (251, 143, 38), 10)[0] is not None
         return array_image, is_alive
 
     def step(self, action):
@@ -153,7 +155,7 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
         reward = reward_function(done, self.count)
         self.count += 1
         next_state = self.last_state[0]
-        return next_state, reward, done, False, {}
+        return np.array([next_state]), np.array([reward]), np.array([done]), np.array([{"terminal_observation":next_state}])
 
     def reset(self, seed=None):
         # Reset the state of the environment to an initial state
@@ -161,7 +163,17 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
         time.sleep(2)
         self.game_live = False
         self.count = 0
-        return np.zeros((85, 85, 1), dtype=np.uint8), {}
+        return np.array([np.zeros((85, 85, 1), dtype=np.uint8)])
+
+    # Is a function for a environment that can be asynchronized, here it makes no sense but
+    # DAgger throws if it doesn't have it
+    def step_async(self, action):
+        view.click_delayed_start()
+        self.step_results = self.step(action)
+
+    def step_wait(self):
+        view.click_pause()
+        return self.step_results
 
 
 register(
