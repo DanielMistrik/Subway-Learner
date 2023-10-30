@@ -12,14 +12,11 @@ from gymnasium.envs.registration import register
 
 import view
 
-NORMALIZING_CONSTANT = 1000
+NORMALIZING_CONSTANT = 100
 
 
-def reward_function(is_end, count):
-    # Return 0 until end when you return 1
-    if is_end:
-        return count / NORMALIZING_CONSTANT
-    return 0.0
+def reward_function():
+    return 1.0
 
 
 def is_done(state):
@@ -88,8 +85,7 @@ class SubwaySurferEnv(gym.Env, ABC):
             self.subway_game.action(action)
         self.last_state = self._get_feature_vector()
         done = bool(is_done(self.last_state))
-        reward = reward_function(done, self.count)
-        self.count += 0.001
+        reward = reward_function()
         next_state = self.last_state[:-1]
         return next_state, reward, done, False, {}
 
@@ -115,7 +111,7 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
 
     def __init__(self):
         self.action_space = spaces.Discrete(len(game.Action))
-        self.observation_space = spaces.Box(low=0, high=255, shape=(85, 85, 1), dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=12, shape=(41, 45, 1), dtype=np.uint8)
         self.num_envs = 1
         self.game_live = False
         self.game_new = True
@@ -130,11 +126,14 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
                                                     self.subway_game.pixel_height_of_game_screen))
         screenshot_array = np.array(screen_array)
         array_image = cv2.cvtColor(screenshot_array, cv2.COLOR_RGB2GRAY)
-        array_image = array_image[265:-114, 2:-2]
-        new_height = array_image.shape[0] // 5
-        new_width = array_image.shape[1] // 5
-        image_blocks = array_image[:new_height * 5, :new_width * 5].reshape(new_height, 5, new_width, 5)
+        array_image = array_image[280:-280, 80:-80]
+        resizing_ratio = 6
+        new_height = array_image.shape[0] // resizing_ratio
+        new_width = array_image.shape[1] // resizing_ratio
+        image_blocks = array_image[:new_height * resizing_ratio, :new_width * resizing_ratio].reshape(
+            new_height, resizing_ratio, new_width, resizing_ratio)
         array_image = np.mean(image_blocks, axis=(1, 3)).reshape(new_height, new_width, 1)
+        array_image = np.round(array_image * (12.0 / 255)).astype(np.uint8)
         is_alive = \
             view._detect_color_median(screenshot_array[50:90, 280:320], (229, 116, 24), (251, 143, 38), 10)[0] is not None
         return array_image, is_alive
@@ -150,10 +149,13 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
             self.game_live = True
         else:
             self.subway_game.action(action)
+            if action != game.Action.NOOP:
+                time.sleep(0.25)
+            else:
+                time.sleep(0.05)
         self.last_state = self._get_feature_vector()
         done = not self.last_state[1]
-        reward = reward_function(done, self.count)
-        self.count += 1
+        reward = reward_function()
         next_state = self.last_state[0]
         return np.array([next_state]), np.array([reward]), np.array([done]), np.array([{"terminal_observation":next_state}])
 
@@ -163,7 +165,7 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
         time.sleep(2)
         self.game_live = False
         self.count = 0
-        return np.array([np.zeros((85, 85, 1), dtype=np.uint8)])
+        return np.array([np.zeros((41, 45, 1), dtype=np.uint8)])
 
     # Is a function for a environment that can be asynchronized, here it makes no sense but
     # DAgger throws if it doesn't have it
@@ -174,7 +176,6 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
     def step_wait(self):
         view.click_pause()
         return self.step_results
-
 
 register(
     id='SubwaySurferEnv-v1',

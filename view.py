@@ -59,7 +59,7 @@ def click_delayed_start():
     coords = _detect_color_median(screen_array, (69, 157, 44), (70, 158, 45), 10)
     if coords[0] is not None:
         pyautogui.click(x=coords[0], y=coords[1])
-        time.sleep(2)
+        time.sleep(1.6)
 
 
 def detect_screen():

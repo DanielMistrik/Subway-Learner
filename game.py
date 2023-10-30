@@ -223,12 +223,15 @@ if __name__ == '__main__':
                                                 test.pixel_height_of_game_screen))
     screenshot_array = np.array(screen_array)
     array_image = cv2.cvtColor(screenshot_array, cv2.COLOR_RGB2GRAY)
-    array_image = array_image[265:-114, 2:-2]
-    new_height = array_image.shape[0] // 5
-    new_width = array_image.shape[1] // 5
-    image_blocks = array_image[:new_height * 5, :new_width * 5].reshape(new_height, 5, new_width, 5)
+    array_image = array_image[280:-280, 80:-80]
+    resizing_ratio = 6
+    new_height = array_image.shape[0] // resizing_ratio
+    new_width = array_image.shape[1] // resizing_ratio
+    image_blocks = array_image[:new_height * resizing_ratio, :new_width * resizing_ratio].reshape(
+        new_height, resizing_ratio, new_width, resizing_ratio)
     array_image = np.mean(image_blocks, axis=(1, 3))
-    plt.imshow(screenshot_array[50:90, 280:320])
+    rescaled_image = np.round(array_image * (12.0 / 255)).astype(np.uint8)
+    plt.imshow(rescaled_image)
     plt.axis('off')
     plt.show()
     print(view._detect_color_median(screenshot_array[:200, 200:], (229, 116, 24), (251, 143, 38), 10)[0] is not None)
