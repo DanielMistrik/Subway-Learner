@@ -224,7 +224,7 @@ if __name__ == '__main__':
     screenshot_array = np.array(screen_array)
     array_image = cv2.cvtColor(screenshot_array, cv2.COLOR_RGB2GRAY)
     array_image = array_image[280:-280, 80:-80]
-    resizing_ratio = 6
+    resizing_ratio = 7
     new_height = array_image.shape[0] // resizing_ratio
     new_width = array_image.shape[1] // resizing_ratio
     image_blocks = array_image[:new_height * resizing_ratio, :new_width * resizing_ratio].reshape(

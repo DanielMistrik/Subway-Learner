@@ -42,7 +42,7 @@ def detect_cross():
     return _detect_color_median(screen_array, (60, 60, 182), (60, 60, 183), 20)
 
 
-def click_pause():
+def click_pause(n=1):
     """
     Finds the pause button and clicks it
     """
@@ -51,15 +51,20 @@ def click_pause():
     coords = _detect_color_median(screen_array, (89, 171, 211), (90, 172, 212), 10)
     if coords[0] is not None:
         pyautogui.click(x=coords[0], y=coords[1])
-        time.sleep(1)
+        time.sleep(n)
 
 
-def click_delayed_start():
+def click_delayed_start(n=1.6):
     screen_array = np.array(pyautogui.screenshot())
     coords = _detect_color_median(screen_array, (69, 157, 44), (70, 158, 45), 10)
+    i = 0
+    while coords[0] is None and i < 50:
+        i += 1
+        coords = _detect_color_median(screen_array, (69, 157, 44), (70, 158, 45), 10)
     if coords[0] is not None:
         pyautogui.click(x=coords[0], y=coords[1])
-        time.sleep(1.6)
+
+    time.sleep(n)
 
 
 def detect_screen():

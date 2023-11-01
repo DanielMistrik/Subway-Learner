@@ -111,12 +111,13 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
 
     def __init__(self):
         self.action_space = spaces.Discrete(len(game.Action))
-        self.observation_space = spaces.Box(low=0, high=12, shape=(41, 45, 1), dtype=np.uint8)
+        self.n, self.m =41, 45
+        self.observation_space = spaces.Box(low=0, high=255, shape=(1, self.n, self.m), dtype=np.uint8)
         self.num_envs = 1
         self.game_live = False
         self.game_new = True
         self.subway_game = game.Game()
-        self.last_state = np.zeros((85, 85, 1))
+        self.last_state = np.zeros((1, self.n, self.m))
         self.count = 0
         self.step_results = None
 
@@ -132,8 +133,8 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
         new_width = array_image.shape[1] // resizing_ratio
         image_blocks = array_image[:new_height * resizing_ratio, :new_width * resizing_ratio].reshape(
             new_height, resizing_ratio, new_width, resizing_ratio)
-        array_image = np.mean(image_blocks, axis=(1, 3)).reshape(new_height, new_width, 1)
-        array_image = np.round(array_image * (12.0 / 255)).astype(np.uint8)
+        array_image = np.mean(image_blocks, axis=(1, 3)).reshape(1, new_height, new_width)
+        array_image = np.round(array_image * (255/255)).astype(np.uint8)
         is_alive = \
             view._detect_color_median(screenshot_array[50:90, 280:320], (229, 116, 24), (251, 143, 38), 10)[0] is not None
         return array_image, is_alive
@@ -165,16 +166,14 @@ class ImageSubwaySurferEnv(gym.Env, ABC):
         time.sleep(2)
         self.game_live = False
         self.count = 0
-        return np.array([np.zeros((41, 45, 1), dtype=np.uint8)])
+        return np.array([np.zeros((1, self.n, self.m), dtype=np.uint8)])
 
     # Is a function for a environment that can be asynchronized, here it makes no sense but
     # DAgger throws if it doesn't have it
     def step_async(self, action):
-        view.click_delayed_start()
         self.step_results = self.step(action)
 
     def step_wait(self):
-        view.click_pause()
         return self.step_results
 
 register(
