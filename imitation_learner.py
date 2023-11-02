@@ -136,7 +136,7 @@ def collect_rollouts(n):
         np.save(prefix + 'infos.npy', infos)
         np.save(prefix + 'dones.npy', dones)
         # Print progress
-        print(str(n)+"/"+str(n))
+        print(str(observations.shape[0])+"/"+str(n))
 
     state_parts = {'obs': observations, 'next_obs': next_observations, 'acts': acts, 'dones': dones, 'infos': infos}
 
@@ -146,7 +146,7 @@ def collect_rollouts(n):
 def get_BC_trainer(pre_train=False):
     if pre_train:
         print("#####\nBeginning pre-training BC Learner\n#####")
-        transitions = collect_rollouts(n=1)
+        transitions = collect_rollouts(n=2000)
         bc_trainer = bc.BC(
             observation_space=ss_env.observation_space,
             action_space=ss_env.action_space,
@@ -191,7 +191,8 @@ def train_DAgger(n=500, pre_train=False):
     return dagger_trainer
 
 
-def evaluate_learner(dagger_policy, n=5):
+def evaluate_learner(learner_policy, n=5):
+    sl_model = torch.load('sl-model.pth')
     total_time_lasted = 0
     for episode in range(n):
         obs, done = ss_env.reset(), [False]
@@ -199,15 +200,18 @@ def evaluate_learner(dagger_policy, n=5):
         while not done[0]:
             if isinstance(obs, tuple):
                 obs = obs[0]
-            action, _ = dagger_policy.predict(obs)
-            obs, reward, done, info = ss_env.step(action)
+            with torch.no_grad():
+                predicted_probabilities = sl_model(torch.from_numpy(obs).to(torch.float32))
+                predicted_index = torch.argmax(predicted_probabilities, dim=1).tolist()[0]
+            action, _ = learner_policy.predict(obs)
+            obs, reward, done, info = ss_env.step(game.Action(predicted_index))
         total_time_lasted += time.perf_counter() - tick
     print(str(total_time_lasted / n))
 
 
 if __name__ == '__main__':
-    learner = train_DAgger(2000, pre_train=True)
-    learner.policy.save('imitation-learner')
-    loaded_policy = stable_baselines3.common.policies.ActorCriticPolicy.load('imitation-learner')
+    #learner = train_DAgger(4000, pre_train=True)
+    #learner.policy.save('imitation-learner')
+    loaded_policy = stable_baselines3.common.policies.ActorCriticCnnPolicy.load('imitation-learner')
     evaluate_learner(loaded_policy)
     # pras_kay()
