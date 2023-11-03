@@ -9,17 +9,14 @@ class SubwayCNN(nn.Module):
 
         # Convolutional Features
         self.features = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.Tanh(),
-            nn.AvgPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(32, 16, kernel_size=3, padding=1),
+            nn.Conv2d(1, 16, kernel_size=3, padding=1),
             nn.Tanh(),
             nn.AvgPool2d(kernel_size=2, stride=2),
         )
 
         # Dense Neural Network
         self.classifier = nn.Sequential(
-            nn.Linear(16 * 10 * 11, 128),
+            nn.Linear(16 * 20 * 22, 128),
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(128, 5)
@@ -27,7 +24,7 @@ class SubwayCNN(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(-1, 16 * 10 * 11)  # Flatten
+        x = x.view(-1, 16 * 20 * 22)  # Flatten
         x = self.classifier(x)
 
         return x

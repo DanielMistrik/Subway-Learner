@@ -8,23 +8,17 @@ import tqdm
 import CNNLearner
 import subway_dataset
 
-# Initializing CNN Learner and Data Loader
-dataset = subway_dataset.SubwayDataset()
-batch_size = 32  # You can change this to whatever batch size you want
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-num_epochs = 20
 
 criterion = nn.CrossEntropyLoss()
 
 
-def get_trained_learner():
+def train_learner_given_dataloader(data_loader, num_epochs=20):
     model = CNNLearner.SubwayCNN()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     for epoch in range(num_epochs):
         running_loss = 0.0
-        for inputs, labels in tqdm.tqdm(train_loader, leave=False):
+        for inputs, labels in tqdm.tqdm(data_loader, leave=False):
             optimizer.zero_grad()
             one_hot_encoded_labels = np.zeros((labels.shape[0], 5))
             one_hot_encoded_labels[np.arange(labels.shape[0]), labels.to(torch.int32)] = 1
@@ -38,10 +32,15 @@ def get_trained_learner():
 
             loss.backward()
             optimizer.step()
-        epoch_loss = running_loss / len(train_loader)
+        epoch_loss = running_loss / len(data_loader)
         print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}')
 
     return model
+
+
+def get_trained_learner():
+    train_loader = DataLoader(subway_dataset.SubwayDataset(), batch_size=32, shuffle=True)
+    return train_learner_given_dataloader(train_loader)
 
 if __name__ == '__main__':
     model = get_trained_learner()

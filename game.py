@@ -130,6 +130,10 @@ class Game:
         self.additive_threshold = 0
 
     def start(self) -> None:
+        detected_cross = view.detect_cross()
+        if detected_cross[0] is not None:
+            pyautogui.click(x=detected_cross[0], y=detected_cross[1])
+            time.sleep(1)
         pyautogui.click(x=self.center[0], y=self.center[1])
         pyautogui.moveTo(x=self.center[0], y=self.center[1] - (330 / 765) * self.pixel_height_of_game_screen)
         time.sleep(2)
@@ -154,8 +158,10 @@ class Game:
             case Action.RIGHT:
                 pyautogui.press('right')
             case Action.UP:
+                time.sleep(0.05)
                 pyautogui.press('up')
             case Action.DOWN:
+                time.sleep(0.05)
                 pyautogui.press('down')
             case Action.NOOP:
                 pass

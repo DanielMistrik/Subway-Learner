@@ -54,7 +54,7 @@ def click_pause(n=1):
         time.sleep(n)
 
 
-def click_delayed_start(n=1.6):
+def click_delayed_start(n=1.7):
     screen_array = np.array(pyautogui.screenshot())
     coords = _detect_color_median(screen_array, (69, 157, 44), (70, 158, 45), 10)
     i = 0

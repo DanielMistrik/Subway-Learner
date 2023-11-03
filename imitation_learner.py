@@ -46,20 +46,19 @@ class HumanPolicy(policies.BasePolicy):
         actions = []
         for obs in observation:
             action = 0
-
             def on_key_event(e):
                 nonlocal action
                 match e.name:
-                    case 'up':
+                    case 'up' | 'w':
                         action = 3
                         return False
-                    case 'down':
+                    case 'down' | 's':
                         action = 4
                         return False
-                    case 'left':
+                    case 'left' | 'a':
                         action = 1
                         return False
-                    case 'right':
+                    case 'right' | 'd':
                         action = 2
                         return False
                     case _:
@@ -192,7 +191,6 @@ def train_DAgger(n=500, pre_train=False):
 
 
 def evaluate_learner(learner_policy, n=5):
-    sl_model = torch.load('sl-model.pth')
     total_time_lasted = 0
     for episode in range(n):
         obs, done = ss_env.reset(), [False]
@@ -200,11 +198,8 @@ def evaluate_learner(learner_policy, n=5):
         while not done[0]:
             if isinstance(obs, tuple):
                 obs = obs[0]
-            with torch.no_grad():
-                predicted_probabilities = sl_model(torch.from_numpy(obs).to(torch.float32))
-                predicted_index = torch.argmax(predicted_probabilities, dim=1).tolist()[0]
             action, _ = learner_policy.predict(obs)
-            obs, reward, done, info = ss_env.step(game.Action(predicted_index))
+            obs, reward, done, info = ss_env.step(action)
         total_time_lasted += time.perf_counter() - tick
     print(str(total_time_lasted / n))
 
