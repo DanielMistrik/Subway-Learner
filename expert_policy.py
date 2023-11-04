@@ -16,17 +16,20 @@ class HumanPolicy(policies.BasePolicy):
     A policy that queries the human for actions by showing the state
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, pause_game=True, *args, **kwargs):
         super(HumanPolicy, self).__init__(ss_env.observation_space, ss_env.action_space, *args, **kwargs)
+        self.pause_game = pause_game
         self.action = game.Action.NOOP
         self.observation_space = ss_env.observation_space
         self.action_space = ss_env.action_space
 
     def _predict(self, observation: np.ndarray, deterministic: bool = False):
-        view.click_pause()
+        if self.pause_game:
+            view.click_pause()
         actions = []
         for obs in observation:
             action = 0
+
             def on_key_event(e):
                 nonlocal action
                 match e.name:
@@ -57,7 +60,8 @@ class HumanPolicy(policies.BasePolicy):
             plt.clf()
             plt.pause(0.25)
             actions.append([action])
-        view.click_delayed_start()
+        if self.pause_game:
+            view.click_delayed_start()
         return torch.tensor(actions)
 
     def forward(self, *args, **kwargs):
