@@ -166,7 +166,7 @@ class model_wrapper:
 
 
 if __name__ == '__main__':
-    raw_model = DAgger()
+    raw_model = DAgger(N=40)
     torch.save(raw_model, 'dagger-model-epochs-2000')
     #print("TESTING BC LEARNER")
     #raw_model = torch.load('qe-dagger-model-1000')
