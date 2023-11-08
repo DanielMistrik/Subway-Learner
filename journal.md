@@ -142,3 +142,12 @@ Really good progress on the DAgger/Behvaioral Cloning Front. I got an
 initial version up and running and it seems to be faring quite well. There are some weird
 bugs arising from step_wait() which I need to debug, it could be a me issue but the bug is very
 weird so might be something on their side. In any case Ill solve that tomorrow.
+
+### Weekend Nov 4-5 2023 ###
+Playtime duration as an average of 50 games: 
+BC-Learner 14.64, DAgger 20.89, QE-DAgger 17.89, QE-DAgger2 16.39
+Note BC learner was trained on 2000 samples, DAgger on ~600 Samples and 
+QE-DAgger & QE-DAgger-2 on 500 samples. Clearly DAgger is the way to go.
+I did QE-DAgger at a 1000 samples with a modified weighted loss function and 
+it ran for 11.55 seconds. Clearly not the way to go. I will add another 
+convolutional layer to the CNN, put back the old loss function and run DAgger for 2000 samples.

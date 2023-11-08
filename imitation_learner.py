@@ -205,8 +205,8 @@ def evaluate_learner(learner_policy, n=5):
 
 
 if __name__ == '__main__':
-    #learner = train_DAgger(4000, pre_train=True)
+    # learner = train_DAgger(4000, pre_train=True)
     #learner.policy.save('imitation-learner')
-    loaded_policy = stable_baselines3.common.policies.ActorCriticCnnPolicy.load('imitation-learner')
-    evaluate_learner(loaded_policy)
+    loaded_policy = stable_baselines3.common.policies.ActorCriticCnnPolicy.load('bc-learner')
+    evaluate_learner(loaded_policy, n=50)
     # pras_kay()

@@ -123,7 +123,7 @@ def QE_DAgger(N=20, T=50, learn_from_fail=False):
                        np.concatenate((dataset[1], np.array([expert_action.item()])), axis=0))
 
         # Train the new model
-        cur_model = get_trained_model(dataset[0], dataset[1], num_epochs=20)
+        cur_model = get_trained_model(dataset[0], dataset[1], num_epochs=30)
 
     return cur_model
 
@@ -140,14 +140,14 @@ def DAgger(N=20, T=50):
     final_beta = 0.3
 
     # Iterate on rollouts and training experts
-    for i in range(N+1):
+    for i in range(N):
         print(f"STARTING EPOCH {i+1}/{N} WITH BETA: {beta}")
         # Get the acts of both our expert and the training policy
         dataset_i = rollout_trajectories(T, cur_model, expert, beta)
         # Concatenate dataset
         dataset = tuple(np.concatenate([a, b], axis=0) for a, b in zip(dataset, dataset_i))
         # Train the new model
-        cur_model = get_trained_model(dataset[0], dataset[1], num_epochs=20)
+        cur_model = get_trained_model(dataset[0], dataset[1], num_epochs=30)
         # Get new Beta <- Linear Approach Initially
         beta = max(final_beta, beta - 4*(1 - final_beta)/(3*N))
 
@@ -166,8 +166,9 @@ class model_wrapper:
 
 
 if __name__ == '__main__':
-    #raw_model = QE_DAgger(10, learn_from_fail=True)
-    #torch.save(raw_model, 'qe-dagger-model-2')
-    raw_model = torch.load('qe-dagger-model-2')
+    raw_model = DAgger()
+    torch.save(raw_model, 'dagger-model-epochs-2000')
+    #print("TESTING BC LEARNER")
+    #raw_model = torch.load('qe-dagger-model-1000')
     wrapped_model = model_wrapper(raw_model)
-    imitation_learner.evaluate_learner(wrapped_model, 10)
+    imitation_learner.evaluate_learner(wrapped_model, 50)

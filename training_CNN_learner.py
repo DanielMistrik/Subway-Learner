@@ -8,7 +8,6 @@ import tqdm
 import CNNLearner
 import subway_dataset
 
-
 criterion = nn.CrossEntropyLoss()
 
 
