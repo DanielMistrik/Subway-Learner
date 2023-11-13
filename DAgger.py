@@ -50,7 +50,7 @@ def rollout_trajectories(T, model, expert, beta):
 
 
 # Learn only from the mistakes of the learner
-def learner_fail_rollout(T, model):
+def learner_fail_rollout(T, model, samples_to_collect_before_fail):
     trajectories = np.empty((0, 1, 41, 45))
     sampled_trajectories = np.empty((0, 1, 41, 45))
     obs, done = ss_env.reset(), [False]
@@ -59,7 +59,7 @@ def learner_fail_rollout(T, model):
         if done[0]:
             ss_env.game_live = False
             # Sample the all or the last 10 observations before the learner failed
-            n = min(sampled_trajectories.shape[0], 10)
+            n = min(sampled_trajectories.shape[0], samples_to_collect_before_fail)
             trajectories = np.concatenate((trajectories, sampled_trajectories[-n:].copy()), axis=0)
             sampled_trajectories = sampled_trajectories[:-n] if sampled_trajectories.shape[0] > n else \
                 np.empty((0, 1, 41, 45))
@@ -100,18 +100,19 @@ def learner_rollout(T, model):
     return trajectories
 
 
-def QE_DAgger(N=20, T=50, learn_from_fail=False):
+def QE_DAgger(N=20, T=50, learn_from_fail=False, lf_constant=1.5, samples_to_collect_before_fail=10, existing_model=None):
     # Initializing dataset (observations, acts) which are both np.arrays of the same length
     dataset = (np.zeros((1, 1, 41, 45)), np.zeros(1))
     # Initializing First Model
-    cur_model = get_trained_model(dataset[0], dataset[1], num_epochs=1)
+    cur_model = get_trained_model(dataset[0], dataset[1], num_epochs=1) if existing_model is None else existing_model
     # Get expert policy
     expert = expert_policy.HumanPolicy(pause_game=False)
     # Iterate on rollouts and training experts
-    for i in range(N + 1):
+    for i in range(N):
         print(f"STARTING EPOCH {i + 1}/{N}")
         # Get the observations from our model
-        dataset_i = learner_rollout(2*T, cur_model) if not learn_from_fail else learner_fail_rollout(1.5*T, cur_model)
+        dataset_i = learner_rollout(2*T, cur_model) if not learn_from_fail \
+            else learner_fail_rollout(lf_constant*T, cur_model, samples_to_collect_before_fail)
         # Collect expert actions on T of the observations
         possible_observations_to_label = [i for i in range(len(dataset_i))]
         for j in range(T):
@@ -166,9 +167,13 @@ class model_wrapper:
 
 
 if __name__ == '__main__':
-    raw_model = DAgger(N=40)
-    torch.save(raw_model, 'dagger-model-epochs-2000')
+    #raw_model = DAgger(N=40)
+    #torch.save(raw_model, 'dagger-model-epochs-2000')
     #print("TESTING BC LEARNER")
-    #raw_model = torch.load('qe-dagger-model-1000')
-    wrapped_model = model_wrapper(raw_model)
+    dag_model = torch.load('dagger-model-epochs-2000')
+    # Refine existing model
+    # refined_model = QE_DAgger(N=10, learn_from_fail=True, lf_constant=1,
+    #                          samples_to_collect_before_fail=5, existing_model=dag_model)
+    # torch.save(refined_model, 'refined-2000-dagger-model-epochs-500')
+    wrapped_model = model_wrapper(dag_model)
     imitation_learner.evaluate_learner(wrapped_model, 50)

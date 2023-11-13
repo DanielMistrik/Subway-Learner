@@ -151,3 +151,4 @@ QE-DAgger & QE-DAgger-2 on 500 samples. Clearly DAgger is the way to go.
 I did QE-DAgger at a 1000 samples with a modified weighted loss function and 
 it ran for 11.55 seconds. Clearly not the way to go. I will add another 
 convolutional layer to the CNN, put back the old loss function and run DAgger for 2000 samples.
+DAgger with 2000 samples is 21.48 seconds. Will now try to regine it with QE-DAgger
