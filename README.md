@@ -11,4 +11,8 @@ a high noise environment.
 1. The screen is behind a monotonic light colour background.
 2. The window is the only one with similar size and dimension on the screen.
 3. The game is in the initial homepage, NOT the restart page.
-   
+
+
+## Note on Current Version ##
+This is the 'raw' repo that represents the state we left when we finally got the DAgger model to run. 
+This is a very un-clean and disorganized repo. I will try to clean it but if anyone else wants to, by all means do so.
